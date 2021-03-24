@@ -2,12 +2,14 @@ from django.shortcuts import render
 
 # Create your views here.
 from rest_framework.views import APIView
-from .serializers import BookSerializer
+from .serializers import BookSerializer, LoginSerializer
 from .models import Book
 from rest_framework.response import Response
 from rest_framework import status
+from django.contrib.auth import login as book_login, logout as book_logout
+from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
-from rest_framework.authentication import SessionAuthentication,BasicAuthentication
+from rest_framework.authentication import SessionAuthentication,BasicAuthentication, TokenAuthentication
 class BookList(APIView):
     def get(self,request, format=None):
         books = Book.objects.all()
@@ -45,3 +47,19 @@ class BookDetail(APIView):
         book.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+class LoginView(APIView):
+    def post(self,request):
+        serializer = LoginSerializer(data=request.user)
+        serializer.is_valid(raise_exception=True)
+        user=serializer.validated_data["user"]
+        book_login(request,user)
+        token,created=Token.objects.get_or_create(user=user)
+        return Response({"token": token.key},status=200)
+
+
+class LogoutView(APIView):
+    authentication_classes = [(TokenAuthentication)]
+    permission_classes = [IsAuthenticated]
+    def post(self,request):
+        book_logout(request)
+        return Response(status.HTTP_200_OK)

@@ -16,11 +16,13 @@ Including another URLconf
 
 from django.urls import path
 
-from .views import BookList, BookDetail
+from .views import BookList, BookDetail, LoginView, LogoutView
 from rest_framework.urlpatterns import format_suffix_patterns
 urlpatterns = [
     path("books", BookList.as_view()),
-    path("books/<int:pk>", BookDetail.as_view())
+    path("books/<int:pk>", BookDetail.as_view()),
+    path("login", LoginView.as_view()),
+    path("logout", LogoutView.as_view()),
 
 ]
 urlpatterns = format_suffix_patterns(urlpatterns)
